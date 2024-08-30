@@ -1,0 +1,8 @@
+en:
+  discourse_category_restrictor:
+    button_label: "Manage Silenced Users"
+  admin_js:
+    admin:
+      site_settings:
+        categories:
+          discourse_category_restrictor: "Discourse Category Restrictor"

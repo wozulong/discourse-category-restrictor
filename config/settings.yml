@@ -1,0 +1,4 @@
+discourse_category_restrictor:
+  category_restrictor_enabled:
+    default: false
+    client: true

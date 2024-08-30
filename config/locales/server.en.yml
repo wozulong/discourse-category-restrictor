@@ -1,0 +1,5 @@
+en:
+  site_settings:
+    category_restrictor_enabled: "Enable the category restrictor plugin"
+  discourse_category_restrictor:
+    posting_not_allowed: "You are not allowed to post in this category."
