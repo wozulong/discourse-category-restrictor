@@ -5,6 +5,8 @@
 
 enabled_site_setting :category_restrictor_enabled
 
+register_asset "stylesheets/common.scss"
+
 require_relative 'lib/discourse_category_restrictor/engine'
 
 register_svg_icon("fas fa-user-slash")

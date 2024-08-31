@@ -1,0 +1,21 @@
+.d-modal.category-restrictor-manager {
+  .d-modal__title h1 {
+    font-size: 16px;
+  }
+  table.silenced-users-table {
+    width: 100%;
+    td {
+      padding: 8px;
+      white-space: nowrap;
+    }
+    td.avatar {
+      width: 30px;
+    }
+    td.username {
+      flex-grow: 1;
+    }
+    td.button, td.status {
+      width: 1%;
+    }
+  }
+}

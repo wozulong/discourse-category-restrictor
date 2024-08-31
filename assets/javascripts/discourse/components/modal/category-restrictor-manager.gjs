@@ -1,28 +1,22 @@
-import { ajax } from "discourse/lib/ajax";
-import { popupAjaxError } from "discourse/lib/ajax-error";
 import { action, get } from "@ember/object";
 import { on } from "@ember/modifier";
 import Component from "@ember/component";
-import { tracked } from "@glimmer/tracking";
-import ItsATrap from "@discourse/itsatrap";
-import { formattedReminderTime } from "discourse/lib/bookmark";
-import {
-  timeShortcuts,
-  TIME_SHORTCUT_TYPES,
-} from "discourse/lib/time-shortcut";
-import I18n from "discourse-i18n";
+import { fn, hash } from "@ember/helper";
 import { inject as service } from "@ember/service";
+import { tracked } from "@glimmer/tracking";
+import UserChooser from "select-kit/components/user-chooser";
+import { ajax } from "discourse/lib/ajax";
+import { popupAjaxError } from "discourse/lib/ajax-error";
+import I18n from "discourse-i18n";
 import DModal from "discourse/components/d-modal";
 import DModalCancel from "discourse/components/d-modal-cancel";
-import { fn } from "@ember/helper";
+import DButton from "discourse/components/d-button";
+import i18n from "discourse-common/helpers/i18n";
 
 export default class CategoryRestrictorManager extends Component {
   @service currentUser;
-
-  @service store;
-
   @tracked users = [];
-  @tracked username = '';
+  @tracked usernames = [];
 
   init() {
     super.init(...arguments);
@@ -45,27 +39,39 @@ export default class CategoryRestrictorManager extends Component {
     }));
   }
 
+  get modalTitle() {
+    return I18n.t("discourse_category_restrictor.modal_title", { name: this.model.category.name} );
+  }
+
+  get addButtonDisabled() {
+    return this.usernames.length == 0;
+  }
+
+  statusLabel(status) {
+    return I18n.t(`discourse_category_restrictor.statuses.${status}`);
+  }
+
   @action
-  updateUsername(event) {
-    this.username = event.target.value;
+  mutTargetUsername(selectedUsernames) {
+    this.usernames = [selectedUsernames[0]] || [];
   }
 
   @action
   async addSilencedUser() {
-    if (!this.username.trim()) {
+    var username = this.usernames[0] || "";
+    if (!username.trim()) {
       alert('Please enter a username.');
       return;
     }
 
     try {
-      const userResponse = await ajax(`/u/${this.username}.json`);
+      const userResponse = await ajax(`/u/${username}.json`);
       const userId = userResponse.user.id;
-
+      this.usernames = [];
       await ajax(`/category-restrictor/restrict/${this.model.category.id}/${userId}/silence`, {
         method: 'POST',
         data: { restriction_type: 'silence' }
       });
-      alert(`${user.username} has been silenced.`);
       this.loadUsers(); // Reload users to update the table
     } catch (error) {
       console.error("Failed to add silenced user:", error);
@@ -79,56 +85,69 @@ export default class CategoryRestrictorManager extends Component {
       await ajax(`/category-restrictor/restrict/${this.model.category.id}/${userId}/silence`, {
         method: 'DELETE'
       });
-      alert('User has been removed.');
       this.loadUsers(); // Reload users to update the table
     } catch (error) {
-      console.error("Failed to remove user:", error);
       alert('Failed to remove user.');
     }
   }
 
   <template>
     <DModal @title={{this.modalTitle}} @closeModal={{@closeModal}} class="category-restrictor-manager">
-  <:body>
-  <div class="silenced-users-container">
-  <!-- Input and Button to Add a Silenced User -->
-  <div class="add-silenced-user">
-    <input
-      type="text"
-      placeholder="Enter username"
-      {{on "input" this.updateUsername}}
-    />
-    <button class="btn btn-primary" {{on "click" this.addSilencedUser}}>Add Silenced User</button>
-  </div>
+      <:body>
+        <div class="silenced-users-container">
+          <!-- Input and Button to Add a Silenced User -->
+          <div class="add-silenced-user">
+            <UserChooser
+              @value={{this.usernames}}
+              @onChange={{this.mutTargetUsername}}
+              @options={{hash
+                excludeCurrentUser=true
+                allowEmails=false
+                maximum=1
+              }}
+            />
+            <DButton
+              class="btn btn-primary"
+              @action={{this.addSilencedUser}}
+              @label="discourse_category_restrictor.silence_label"
+              @disabled={{this.addButtonDisabled}}>
+            </DButton>
+          </div>
 
-  <!-- Table of Silenced Users -->
-  <table class="silenced-users-table">
-    <thead>
-      <tr>
-        <th>Avatar</th>
-        <th>Username</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#each this.users as |user|}}
-        <tr>
-          <td><img src={{user.avatar_template}} class="user-avatar" /></td>
-          <td>{{user.username}}</td>
-          <td>{{user.status}}</td>
-          <td>
-            <button class="btn btn-danger" {{on "click" (fn this.removeUser user.id)}}>Remove</button>
-          </td>
-        </tr>
-      {{/each}}
-    </tbody>
-  </table>
-</div>
-  </:body>
-  <:footer>
-  </:footer>
-</DModal>
+          <table class="silenced-users-table">
+            <thead>
+              <tr>
+                <th colspan="2">{{i18n "discourse_category_restrictor.table_headings.username"}}</th>
+                <th>{{i18n "discourse_category_restrictor.table_headings.status"}}</th>
+                <th>{{i18n "discourse_category_restrictor.table_headings.actions"}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each this.users as |user|}}
+                <tr>
+                  <td class="avatar"><img src={{user.avatar_template}} class="user-avatar" /></td>
+                  <td class="username">{{user.username}}</td>
+                  <td class="status">{{this.statusLabel user.status}}</td>
+                  <td class="button">
+                    <DButton
+                      class="btn btn-danger"
+                      @icon="trash-alt"
+                      @label="discourse_category_restrictor.remove_label"
+                      @action={{fn this.removeUser user.id}}
+                    />
+                  </td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </:body>
+      <:footer>
+        <DButton
+          @action={{@closeModal}}
+          @label="discourse_category_restrictor.ok_label"
+        />
+      </:footer>
+    </DModal>
   </template>
-
 }

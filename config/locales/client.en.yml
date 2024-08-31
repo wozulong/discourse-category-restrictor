@@ -1,6 +1,17 @@
 en:
-  discourse_category_restrictor:
-    button_label: "Manage Silenced Users"
+  js:
+    discourse_category_restrictor:
+      button_label: "Manage Silenced Users"
+      modal_title: "Managed Silenced Users for Category '%{name}'"
+      silence_label: "Silence User"
+      remove_label: "Remove"
+      ok_label: "OK"
+      table_headings:
+        username: "Username"
+        actions: "Actions"
+        status: "Status"
+      statuses:
+        silenced: 'Silenced'
   admin_js:
     admin:
       site_settings:
