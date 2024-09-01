@@ -63,6 +63,8 @@ module ::DiscourseCategoryRestrictor
       end
 
       def get_category_ids(user, custom_field_key)
+        # we must remove [0] because split produces that bogus value, and that's because we start and end the list of values with "|"
+        # and we do that to simplify the LIKE below
         (user.custom_fields[custom_field_key] || "").split("|").map(&:to_i) - [0]
       end
 
