@@ -47,6 +47,10 @@ export default class CategoryRestrictorManager extends Component {
     return this.usernames.length == 0;
   }
 
+  get showTable() {
+    return this.users.length > 0;
+  }
+
   statusLabel(status) {
     return I18n.t(`discourse_category_restrictor.statuses.${status}`);
   }
@@ -113,33 +117,34 @@ export default class CategoryRestrictorManager extends Component {
               @disabled={{this.addButtonDisabled}}>
             </DButton>
           </div>
-
-          <table class="silenced-users-table">
-            <thead>
-              <tr>
-                <th colspan="2">{{i18n "discourse_category_restrictor.table_headings.username"}}</th>
-                <th>{{i18n "discourse_category_restrictor.table_headings.status"}}</th>
-                <th>{{i18n "discourse_category_restrictor.table_headings.actions"}}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{#each this.users as |user|}}
+          {{#if this.showTable}}
+            <table class="silenced-users-table">
+              <thead>
                 <tr>
-                  <td class="avatar"><img src={{user.avatar_template}} class="user-avatar" /></td>
-                  <td class="username">{{user.username}}</td>
-                  <td class="status">{{this.statusLabel user.status}}</td>
-                  <td class="button">
-                    <DButton
-                      class="btn btn-danger"
-                      @icon="trash-alt"
-                      @label="discourse_category_restrictor.remove_label"
-                      @action={{fn this.removeUser user.id}}
-                    />
-                  </td>
+                  <th colspan="2">{{i18n "discourse_category_restrictor.table_headings.username"}}</th>
+                  <th>{{i18n "discourse_category_restrictor.table_headings.status"}}</th>
+                  <th>{{i18n "discourse_category_restrictor.table_headings.actions"}}</th>
                 </tr>
-              {{/each}}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {{#each this.users as |user|}}
+                  <tr>
+                    <td class="avatar"><img src={{user.avatar_template}} class="avatar" /></td>
+                    <td class="username">{{user.username}}</td>
+                    <td class="status">{{this.statusLabel user.status}}</td>
+                    <td class="button">
+                      <DButton
+                        class="btn btn-danger"
+                        @icon="trash-alt"
+                        @label="discourse_category_restrictor.remove_label"
+                        @action={{fn this.removeUser user.id}}
+                      />
+                    </td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          {{/if}}
         </div>
       </:body>
       <:footer>
