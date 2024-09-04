@@ -22,7 +22,7 @@ export default {
             return true;
           }
           // if not disabled, check if we should disable because of silencing
-          return this.model.category && this.currentUser.silenced_categories.includes(this.model.category.id);
+          return this.model.category && this.currentUser?.silenced_categories?.includes(this.model.category.id);
         },
       });
 

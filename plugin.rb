@@ -1,6 +1,6 @@
 # name: discourse-category-restrictor
 # about: Allows staff and category moderators to silence users on a per-category basis
-# version: 1.0
+# version: 1.1
 # authors: Communiteq
 
 enabled_site_setting :category_restrictor_enabled
@@ -44,7 +44,7 @@ after_initialize do
   NewPostManager.add_handler do |manager|
     next unless manager.args[:category]
     category_id = manager.args[:category].to_i
-    if manager.user.silenced_categories.include?(category_id)
+    if manager.user&.silenced_categories&.include?(category_id)
       result = NewPostResult.new(:created_post, false)
       result.errors.add(:base, I18n.t('discourse_category_restrictor.posting_not_allowed'))
       next result
