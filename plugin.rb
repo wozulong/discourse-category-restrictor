@@ -1,6 +1,6 @@
 # name: discourse-category-restrictor
 # about: Allows staff and category moderators to silence users on a per-category basis
-# version: 1.1
+# version: 1.2
 # authors: Communiteq
 
 enabled_site_setting :category_restrictor_enabled
@@ -25,8 +25,19 @@ after_initialize do
   end
 
   # category moderation permissions are only serialized to topics so we must add this
+  add_to_class(:user, :category_moderator_for_ids) do
+    return [] unless SiteSetting.enable_category_group_moderation?
+
+    return @category_moderator_for_ids if defined?(@category_moderator_for_ids)
+    @category_moderator_for_ids = CategoryModerationGroup
+      .joins("INNER JOIN group_users ON group_users.group_id = category_moderation_groups.group_id")
+      .where(group_users: { user_id: id })
+      .distinct
+      .pluck(:category_id)
+  end
+
   add_to_serializer(:current_user, :category_moderator_for_ids) do
-    Category.where(reviewable_by_group_id: object.group_ids).pluck(:id)
+    object.category_moderator_for_ids
   end
 
   require_dependency "guardian/topic_guardian"
