@@ -42,7 +42,7 @@ export default class RestrictorManagerButton extends Component {
     // show button on category page only for category moderators
     if (this.args.location == "before-create-topic-button") {
       const categoryId = this.args?.category?.id;
-      return (categoryId && this.currentUser.category_moderator_for_ids.includes(categoryId));
+      return (categoryId && this.currentUser && this.currentUser.category_moderator_for_ids.includes(categoryId));
     }
     return false;
   }
